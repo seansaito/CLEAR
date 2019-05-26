@@ -1,6 +1,6 @@
 # Counterfactual Local Explanations via Regression (CLEAR)
 
-This repository has been created to provide access to the code to the version of CLEAR that was used for the Neuips submission
+This repository has been created to provide access to the code to the version of CLEAR that was used for the Neurips submission
 "Measurable Counterfactual Local Explanations for Any Classifier"
 
 CLEAR explains single predictions of machine learning classifiers. It is based on the view that a satisfactory explanation of a single prediction needs to both
@@ -14,7 +14,7 @@ tkinter, numpy, pandas, sympy, datetime, matplotlib.pyplot, scipy.signal, csv, j
 
 ### Installation
 
-Download a copy of the CLEAR repository into a directory on your PC. The file CLIME_settings.py contains the parameter variabler for CLEAR. Open CLIME_settings 
+Download a copy of the CLEAR repository into a new directory on your PC. The file CLIME_settings.py contains the parameter variabler for CLEAR. Open CLIME_settings and change the value of paramter *LIME_path* to the name of the directory you have created for CLEAR e.g. LIME_path='D:/LIME/'
 
 
 
