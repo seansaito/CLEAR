@@ -18,7 +18,11 @@ Download a copy of the CLEAR repository into a new directory on your PC. The fil
 
 ### Running CLEAR
 
-First, CLEAR's parameters for the experiment should be set. 
+First, CLEAR's parameters for the experiment should be set. These are all in CLIME_settings.py. The admissible values for each parameter are shown in the comment to the right of the parameter eg for *case_study* the admissible values are 'Census','PIMA Indians Diabetes','Credit Card','BreastC'.
+
+CLEAR is then run by running CLEAR.py
+
+
 
 
 
