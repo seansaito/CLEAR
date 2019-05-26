@@ -14,7 +14,7 @@ tkinter, numpy, pandas, sympy, datetime, matplotlib.pyplot, scipy.signal, csv, j
 
 ### Installation
 
-Download a copy of the CLEAR repository into a new directory on your PC. The file CLIME_settings.py contains the parameter variabler for CLEAR. Open CLIME_settings and change the value of parameter *LIME_path* to the name of the directory you have created for CLEAR e.g. LIME_path='D:/LIME/'
+Download a copy of the CLEAR repository into a new directory on your PC. The file CLIME_settings.py contains the parameter variabler for CLEAR. Open CLIME_settings and change the value of parameter *CLEAR_path* to the name of the directory you have created for CLEAR e.g. CLEAR_path='D:/CLEAR/'
 
 ### Running CLEAR
 
