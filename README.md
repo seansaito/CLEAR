@@ -14,15 +14,7 @@ tkinter, numpy, pandas, sympy, datetime, matplotlib.pyplot, scipy.signal, csv, j
 
 ### Installation
 
-The user needs to create a directory on their PC in which to download the following files:
-
-CLIME_settings.py
-CLIME_regression.py
-CLEAR_cont.py
-lime_tabular.py
-CLIME_perturbations.py
-LIME_CLEAR_ comp.py
-CLIME_Process_Dataset.py
+Download a copy of the CLEAR repository into a directory on your PC. The file CLIME_settings.py contains the parameter variabler for CLEAR. Open CLIME_settings 
 
 
 
