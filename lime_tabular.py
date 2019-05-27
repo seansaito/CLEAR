@@ -20,7 +20,7 @@ import explanation
 import lime_base
 import tensorflow as tf
 import pandas as pd
-import CLIME_settings
+import CLEAR_settings
 
 class TableDomainMapper(explanation.DomainMapper):
     """Maps feature ids to names, generates table views, etc"""
@@ -268,7 +268,7 @@ class LimeTabularExplainer(object):
         data, inverse = self.__data_inverse(data_row, num_samples)
         
         #data is already rescaled before going into LIME.
-        if CLIME_settings.LIME_comparison== True:
+        if CLEAR_settings.LIME_comparison== True:
            scaled_data = data 
         else:
            scaled_data = (data - self.scaler.mean_) / self.scaler.scale_
@@ -280,9 +280,9 @@ class LimeTabularExplainer(object):
         ).ravel()
 
 
-        if CLIME_settings.LIME_comparison: 
+        if CLEAR_settings.LIME_comparison: 
             temp=pd.DataFrame(data=inverse,columns=self.feature_names)
-            if CLIME_settings.case_study ==  'Credit Card':  
+            if CLEAR_settings.case_study ==  'Credit Card':  
                 temp=pd.get_dummies(temp, prefix=['mar','gen','edu'], columns=['MARRIAGE','SEX', 'EDUCATION'])
                 temp.columns = temp.columns.str.replace(r"[_]", "Dd")
                 temp.columns = temp.columns.str.replace(r"[.0]", "")
@@ -291,7 +291,7 @@ class LimeTabularExplainer(object):
                     for x in ['eduDd0','eduDd1','eduDd2','eduDd3','eduDd4','eduDd5','eduDd6','marDd0','marDd1','marDd2','genDd1','genDd2']:
                       if x not in temp:
                           temp[x]=0
-            if CLIME_settings.case_study ==  'Census':  
+            if CLEAR_settings.case_study ==  'Census':  
                 temp=pd.get_dummies(temp, prefix=['edu','occ','work','mar','gen'], columns=['EDUCATION','Occupation','Work','MARRIAGE','SEX'])
                 temp.columns = temp.columns.str.replace(r"[_]", "Dd")
                 temp.columns = temp.columns.str.replace(r"[.0]", "")
@@ -437,7 +437,7 @@ class LimeTabularExplainer(object):
                     model_regressor=model_regressor,
                     feature_selection=self.feature_selection)
 #me
-            if CLIME_settings.LIME_comparison== True:
+            if CLEAR_settings.LIME_comparison== True:
                 export_data = [label,yss[0],data_row,ret_exp.local_exp[label],ret_exp.local_pred[0]]
                 with open('LIME_CLEAR_chk.csv','a', newline='') as f:
                     writer = csv.writer(f)
@@ -485,7 +485,7 @@ class LimeTabularExplainer(object):
             data = self.random_state.normal(
                     0, 1, num_samples * data_row.shape[0]).reshape(
                     num_samples, data_row.shape[0])
-            if CLIME_settings.LIME_comparison== True:
+            if CLEAR_settings.LIME_comparison== True:
                 self.scaler.scale_ =1
                 self.scaler.mean_ = 0
             if self.sample_around_instance:
