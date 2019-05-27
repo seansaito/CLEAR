@@ -10,7 +10,7 @@ satisfactory explanation must also be measurable and state how well it can expla
 ### Prerequisites
 
 CLEAR is written in Python 3.7 and Tensorflow 1.13. It runs on Windows 10. CLEAR requires the following Python libraries to be installed:
-tkinter, numpy, pandas, sympy, datetime, matplotlib.pyplot, scipy.signal, csv, json, discretize.
+tkinter, numpy, pandas, sympy, datetime, matplotlib.pyplot, scipy.signal, csv, json.
 
 ### Installation
 
