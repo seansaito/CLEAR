@@ -486,7 +486,7 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,\
     #x=np.array(nncomp_df['accuracy'])
     
                     
-    filename1 = CLEAR_settings.CLEAR_path +'nncomp_'+ datetime.now().strftime("%Y%m%d-%H%M")+'.csv'   
+    filename1 = CLEAR_settings.CLEAR_path +'wPerturb_'+ datetime.now().strftime("%Y%m%d-%H%M")+'.csv'   
     nncomp_df.to_csv(filename1)    
     filename2 = CLEAR_settings.CLEAR_path +'missing_'+ datetime.now().strftime("%Y%m%d-%H%M")+'.csv'
     missing_log_df.to_csv(filename2)  
