@@ -645,7 +645,7 @@ def Run_Regressions(X_test_sample,explainer,feature_list):
         results_df.at[i,'weights'] = regression_obj.coeffs
 
         observation_num += 1  
-    filename1 = CLEAR_settings.CLEAR_path +'LIME_'+ datetime.now().strftime("%Y%m%d-%H%M")+'.csv'   
+    filename1 = CLEAR_settings.CLEAR_path +'CLRreg_'+ datetime.now().strftime("%Y%m%d-%H%M")+'.csv'   
 #    filename2 = CLEAR_settings.CLEAR_path +'Results_'+ datetime.now().strftime("%Y%m%d-%H%M")+'.pkl'  
     results_df.to_csv(filename1)
 #    results_df.to_pickle(filename2) 
