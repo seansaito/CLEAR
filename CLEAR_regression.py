@@ -383,7 +383,8 @@ class CLEARExplainer(object):
                 poly_names = [w.replace('^2', '_sqrd') for w in poly_names]
                 poly_names = [w.replace(' ', '_') for w in poly_names]  
                 poly_df = pd.DataFrame(all_poss, columns=poly_names) 
-            poly_df_org_first_row=poly_df.iloc[0,:] 
+            poly_df_org_first_row=poly_df.iloc[0,:]
+            org_poly_df = poly_df.copy(deep=True)
 #NOw transform so that regression goes through the data point to be explained            
             if CLEAR_settings.regression_type=='multiple' and CLEAR_settings.no_centering==False:
                 Y= self.neighbour_df.loc[:,'prediction'] - self.nn_forecast 
@@ -420,7 +421,7 @@ class CLEARExplainer(object):
                 non_null_educ = [col for col in educ if (X.loc[:, col].sum() >=10)]
                 selected=['1', 'age','hoursPerWeek']
                 selected = selected + non_null_educ                 
-                non_null_columns = [col for col in poly_df.columns if ((poly_df.loc[:, col].min() == 0) &(poly_df.loc[:, col].sum() < 10))]
+                non_null_columns = [col for col in poly_df.columns[3:] if ((poly_df.loc[:, col].min() == 0) &(poly_df.loc[:, col].sum() < 10))]
                 poly_df.drop(non_null_columns, axis=1, inplace=True)   
                 remaining = poly_df.columns.tolist()
                 for x in remaining:
@@ -578,6 +579,7 @@ class CLEARExplainer(object):
                            coeff_feature = classifier.params.index[j]
                            if selected_feature==coeff_feature:
                               self.local_data.append(poly_df_org_first_row.loc[selected_feature])
+                   self.untransformed_predictions = classifier.predict(org_poly_df)                
                 else:
                     self.local_data = []    
                     temp = 0    
@@ -590,10 +592,15 @@ class CLEARExplainer(object):
                                 self.intercept -= poly_df_org_first_row.loc[selected_feature]*classifier.params[j]
                                 temp  -= poly_df_org_first_row.loc[selected_feature]*classifier.params[j]
                                 self.local_data.append(poly_df_org_first_row.loc[selected_feature])
+                                adjustment= self.nn_forecast-classifier.predict(poly_df_org_first_row)
+                                self.untransformed_predictions =  adjustment[0] +classifier.predict(org_poly_df)     
             except:
                 print(formula)
 #                input("Regression failed. Press Enter to continue...")  
            
+            
+
+            
         else:
             print('incorrect regression type specified')
             exit
@@ -616,32 +623,33 @@ def Run_Regressions(X_test_sample,explainer,feature_list):
                                        'standard_error','z_scores','p_values','nn_forecast',
                                        'reg_prob','regression_class','spreadsheet_data','local_data','accuracy'])
     observation_num = CLEAR_settings.first_obs       
-    for i in range(CLEAR_settings.first_obs,CLEAR_settings.last_obs):
+    print('performing step-wise regressions \n')
+    for i in range(CLEAR_settings.first_obs,CLEAR_settings.last_obs+1):
         data_row=pd.DataFrame(columns=feature_list)
         data_row=data_row.append(X_test_sample.iloc[i],ignore_index=True)
         data_row.fillna(0, inplace= True)
-        lime_out = explainer.explain_data_point(data_row, observation_num)
+        regression_obj = explainer.explain_data_point(data_row, observation_num)
         print('Processed observation ' + str(i))
-        results_df.at[i,'features'] = lime_out.features
-        results_df.loc[i,'R_sq'] = lime_out.prediction_score
-        results_df.loc[i,'standard_error'] = lime_out.standard_error
-        results_df.loc[i,'z_scores'] = lime_out.z_scores
-        results_df.loc[i,'p_values'] = lime_out.p_values
-        results_df.loc[i,'nn_forecast'] = lime_out.nn_forecast
-        results_df.loc[i,'reg_prob'] = lime_out.local_prob  
-        results_df.loc[i,'regression_class'] = lime_out.regression_class
-        results_df.at[i,'spreadsheet_data'] =lime_out.local_data
+        results_df.at[i,'features'] = regression_obj.features
+        results_df.loc[i,'R_sq'] = regression_obj.prediction_score
+        results_df.loc[i,'standard_error'] = regression_obj.standard_error
+        results_df.loc[i,'z_scores'] = regression_obj.z_scores
+        results_df.loc[i,'p_values'] = regression_obj.p_values
+        results_df.loc[i,'nn_forecast'] = regression_obj.nn_forecast
+        results_df.loc[i,'reg_prob'] = regression_obj.local_prob  
+        results_df.loc[i,'regression_class'] = regression_obj.regression_class
+        results_df.at[i,'spreadsheet_data'] =regression_obj.local_data
         results_df.at[i,'local_data'] =data_row.values[0]
-        results_df.loc[i,'accuracy'] = lime_out.accuracy
-        results_df.loc[i,'intercept'] = lime_out.intercept
-        results_df.at[i,'weights'] = lime_out.coeffs
+        results_df.loc[i,'accuracy'] = regression_obj.accuracy
+        results_df.loc[i,'intercept'] = regression_obj.intercept
+        results_df.at[i,'weights'] = regression_obj.coeffs
 
         observation_num += 1  
     filename1 = CLEAR_settings.CLEAR_path +'LIME_'+ datetime.now().strftime("%Y%m%d-%H%M")+'.csv'   
 #    filename2 = CLEAR_settings.CLEAR_path +'Results_'+ datetime.now().strftime("%Y%m%d-%H%M")+'.pkl'  
     results_df.to_csv(filename1)
 #    results_df.to_pickle(filename2) 
-    return(results_df)
+    return(results_df, regression_obj)
 
 
 

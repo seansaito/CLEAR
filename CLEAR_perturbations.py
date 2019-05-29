@@ -20,6 +20,8 @@ from datetime import datetime
 import matplotlib.pyplot as plt 
 from scipy.signal import argrelextrema
 import csv
+from jinja2 import Environment, FileSystemLoader
+from math import log10, floor
 
 
 def Get_Counterfactual(sensitivity_df,feature, old_value, observation):
@@ -80,7 +82,8 @@ def Get_Counterfactual(sensitivity_df,feature, old_value, observation):
 
 
 
-def Calculate_Perturbations(explainer, results_df,sensitivity_df,feature_list,numeric_features, model):    
+def Calculate_Perturbations(explainer, results_df,sensitivity_df,\
+                            feature_list,numeric_features, model):    
       
     """ Counterfactual perturbations are now calculated and stored
         in the nncomp_df dataframe. If CLEAR calculates a perturbation
@@ -100,20 +103,20 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,feature_list,nu
     #temp added Glucose_old_sqrd. delete this in poly_df
         feature_list.append('IndicatorFeature')
         feature_list.append('IndicatorFeature_sqrd')
-        for i in range (CLEAR_settings.first_obs,CLEAR_settings.last_obs):
+        for i in range (CLEAR_settings.first_obs,CLEAR_settings.last_obs+1):
             CLEAR_settings.indicatorFeature = np.where(( results_df.local_data[i][1]>=CLEAR_settings.indicator_threshold), 1, 0)
             temp=np.append(results_df.local_data[i], CLEAR_settings.indicatorFeature)
             #below is for Glucose_oild_sqrd to be deleted
             temp=np.append(temp, CLEAR_settings.indicatorFeature)
             results_df.local_data[i]= temp        
             
-    for i in range (CLEAR_settings.first_obs,CLEAR_settings.last_obs):
+    for i in range (CLEAR_settings.first_obs,CLEAR_settings.last_obs+1):
         s1=pd.Series(results_df.local_data[i],feature_list)
         s2=pd.DataFrame(columns=feature_list)
         s2=s2.append(s1,ignore_index=True)
         x= symbols('x')
         str_eqn = ""
-        raw_eqn= results_df.loc[i,'features']
+        raw_eqn= results_df.loc[i,'features'].copy()
         raw_weights = results_df.loc[i,'weights'].tolist()
         raw_data = results_df.loc[i,'local_data'].tolist()
         if CLEAR_settings.LIME_comparison == False:
@@ -511,6 +514,115 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,feature_list,nu
         file1.close()
     except:
         pass
+    return(nncomp_df)
+
+
+
+def Single_prediction_report(results_df,nncomp_df,regression_obj):
+#dataframe to HTML Report
+    if CLEAR_settings.case_study=='Census':
+        explanandum = 'earning > $50k'
+    elif CLEAR_settings.case_study=='PIMA Indians Diabetes':
+        explanandum = 'diabetes'        
+    elif CLEAR_settings.case_study=='Credit Card':
+        explanandum = 'default'        
+    else:
+        explanandum = 'breast cancer'          
+    
+    def round_sig(x, sig=2):
+        return round(x, sig-int(floor(log10(abs(x))))-1)
+    j= results_df.index.values[0]
+    if CLEAR_settings.regression_type== 'multiple':
+        regression_formula = 'prediction = ' +  str(round_sig(results_df.intercept[j]))
+    else:
+        regression_formula = '<font size = "4.5">prediction =  [ 1 + e<sup><b>-w<sup>T</sup>x</sup></b> ]<sup> -1</sup></font size><br><br>' \
+         + '<font size = "4.5"><b><i>w</i></b><sup>T</sup><b><i>x</font size></i></b> =  ' +  str(round_sig(results_df.intercept[j]))
+
+    for i in range(len(results_df.features[j])):    
+        if results_df.features[j][i] == '1':
+            continue
+        elif results_df.weights[j][i]<0:
+                regression_formula = regression_formula + ' - '+ str(-1*round_sig(results_df.weights[j][i])) + \
+                                     ' ' + results_df.features[j][i]        
+        else:
+                regression_formula = regression_formula + ' + ' + str(round_sig(results_df.weights[j][i])) + \
+                                     ' ' + results_df.features[j][i]                                     
+    regression_formula= regression_formula.replace("_sqrd"," sqrd")
+    regression_formula= regression_formula.replace("_","*")
+    report_AI_prediction = str(round_sig(results_df.nn_forecast[j]))
+    if CLEAR_settings.score_type == 'adjR':  
+        report_regression_type = "Adjusted R-Squared"
+    else:
+        report_regression_type = CLEAR_settings.score_type
+        
+        
+    HTML_df= pd.DataFrame(columns=['feature','input value','coeff','abs_coeff'])
+    report_selected = [w.replace('_sqrd', ' sqrd') for w in results_df.features[j]]
+    report_selected = [w.replace('_', '*') for w in report_selected]
+#   results_df.spreadsheet_data does not have intercept data
+    sp_correction = 0
+    for i in range(len(results_df.features[j])):            
+        feature =results_df.features[j][i] 
+        if feature == '1':
+            sp_correction = 1
+            continue
+        else:
+            HTML_df.loc[i,'feature']= results_df.features[j][i] 
+            HTML_df.loc[i,'input value']= results_df.spreadsheet_data[j][i-sp_correction]
+            HTML_df.loc[i,'coeff']=results_df.weights[j][i]
+            HTML_df.loc[i,'abs_coeff']=abs(results_df.weights[j][i])
+
+        
+    HTML_df=HTML_df.sort_values(by=['abs_coeff'], ascending = False)
+    HTML_df.drop(['abs_coeff'],axis =1,inplace=True)
+    
+    HTML_df=HTML_df.head(10)
+        
+    counter_df =nncomp_df[['feature','old_value','perc50']].copy()
+    counter_df.rename(columns={'old_value':'input value', 'perc50':'counterfactual value'}, inplace=True )
+#    HTML_df.to_html('CLEAR.HTML')
+    
+    nncomp_df['error']= nncomp_df['new_value']-nncomp_df['perc50']
+    reg_counter_df=nncomp_df[['feature','new_value','error']].copy()
+    reg_counter_df.error= abs(reg_counter_df.error)
+    reg_counter_df.rename(columns={'new_value':'counterfactual value',\
+                                   'error':'fidelity error'}, inplace=True )
+
+    
+    pd.set_option('colheader_justify', 'left','precision', 2)
+    env = Environment(loader=FileSystemLoader('.'))
+    template = env.get_template("CLEAR_report.html")
+    template_vars = {"title" : "CLEAR Statistics",
+                     "regression_table": HTML_df.to_html(index=False, classes = 'mystyle'),
+                     "counterfactual_table": counter_df.to_html(index=False,classes='mystyle'),
+#                     "inaccurate_table": inaccurate_df.to_html(index=False,classes='mystyle'),
+                     "dataset_name": CLEAR_settings.case_study,
+                     "explanadum":explanandum,
+                     "observation_number": j,
+                     "regression_formula": regression_formula,
+                     "prediction_score": round_sig(results_df.R_sq[j]),
+                     "regression_type":report_regression_type,
+                     "AI_prediction":report_AI_prediction,
+                     "reg_counterfactuals":reg_counter_df.to_html(index=False, classes = 'mystyle')
+                     }
+    # Render our file and create the PDF using our css style file
+    #html_out = template.render(template_vars)
+    with open('new_CLEAR.html', 'w') as fh:
+        fh.write(template.render(template_vars))
+
+    fig = plt.figure()
+    plt.scatter(regression_obj.neighbour_df.loc[:,'prediction'] ,regression_obj.untransformed_predictions , c='green',s=10)
+    plt.plot(np.linspace(0, 1, 100), np.linspace(0, 1, 100), c= "red", linestyle='-')
+    
+    plt.xlabel('Target AI System')
+    if CLEAR_settings.regression_type == 'logistic':
+        plt.ylabel('CLEAR Logistics Regression')
+    elif  CLEAR_settings.regression_type == 'multiple':   
+         plt.ylabel('CLEAR Multiple Regression')
+    else:
+         plt.ylabel('CLEAR Polynomial Regression')
+    
+    fig.savefig('CLEAR_plot.png', bbox_inches = "tight")
+    
+    
     return()
-
-

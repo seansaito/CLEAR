@@ -19,7 +19,7 @@ def Create_PIMA_Datasets():
     """ Reads in PIMA Indians Diabetes Dataset and performs pre-processing
         Creates the training and test datasets
     """    
-    print('Pre-processing')
+    print('Pre-processing \n')
     cols_nozero=['Glucose', 'BloodPressure','SkinThickness','Insulin','BMI']
     df = pd.read_csv(CLEAR_settings.CLEAR_path + 'diabetes.csv')
     df[cols_nozero]=df[cols_nozero].replace(0,np.nan)
@@ -81,11 +81,13 @@ def Create_PIMA_Datasets():
     
     # print and store summary statistics for MLP model
     results = model.evaluate(eval_input_func)
+    print('Accuracy statistics for MLP to be explained')
     for key in sorted(results):
             print("%s: %s" % (key, results[key]))
     return(X_train, X_test_sample,model, numeric_features,category_prefix,feature_list)
 
 def Create_BreastC_Datasets(): 
+    print('Pre-processing \n')
     df = pd.read_csv(CLEAR_settings.CLEAR_path + 'breast cancer.csv')
     df['diagnosis'].replace('B', 0, inplace = True)
     df['diagnosis'].replace('M', 1, inplace = True)
@@ -144,56 +146,14 @@ def Create_BreastC_Datasets():
     
     # print and store summary statistics for MLP model
     results = model.evaluate(eval_input_func)
+    print('Accuracy statistics for MLP to be explained')
     for key in sorted(results):
             print("%s: %s" % (key, results[key]))
     return(X_train, X_test_sample,model, numeric_features,category_prefix,feature_list)   
 
-def Create_Neighbourhoods(X_train,X_test_sample,model,\
-                          numeric_features,category_prefix,feature_list,neighbour_seed):                  
-    np.random.seed(neighbour_seed)   
-    if (CLEAR_settings.case_study== 'PIMA Indians Diabetes') and (CLEAR_settings.test_sample==1):
-        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'PIMA_sensitivity.csv')     
-    elif (CLEAR_settings.case_study== 'PIMA Indians Diabetes') and (CLEAR_settings.test_sample==2):
-        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Final_diabetes_sensitivity2.csv')
-    elif (CLEAR_settings.case_study== 'Credit Card') and (CLEAR_settings.test_sample==1):
-        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Credit_card_sensitivity.csv')   
-    elif (CLEAR_settings.case_study== 'Credit Card') and (CLEAR_settings.test_sample==2):
-        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Credit_card_sensitivity2.csv')   
-    elif (CLEAR_settings.case_study== 'Census') and (CLEAR_settings.test_sample==1):
-        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Final_cens_sensitivity1.csv')   
-    elif (CLEAR_settings.case_study== 'Census') and (CLEAR_settings.test_sample==2):
-        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Final_cens_sensitivity2.csv')  
-    elif (CLEAR_settings.case_study== 'BreastC') and (CLEAR_settings.test_sample==1):
-        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'BreastC_sensitivity1.csv')   
-    elif (CLEAR_settings.case_study== 'BreastC') and (CLEAR_settings.test_sample==2):
-        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'BreastC_sensitivity2.csv')      
-    else:
-        print('Test sample incorrectly specified')
-        exit()      
-    if CLEAR_settings.LIME_comparison == True:
-        if CLEAR_settings.case_study in ['BreastC','PIMA Indians Diabetes']:
-            explainer = lime_tabular.LimeTabularExplainer(X_train, feature_names=feature_list,\
-                                                      discretize_continuous=False,kernel_width=2)
-        elif  CLEAR_settings.case_study == 'Credit Card':
-                  LIME_dataset, feature_list = Credit_categorical(X_train)    
-                  explainer = lime_tabular.LimeTabularExplainer(LIME_dataset, feature_names=feature_list,\
-                                      feature_selection='forward_selection',discretize_continuous=False, \
-                                      categorical_features =[20,21,22])
-        elif  CLEAR_settings.case_study == 'Census':
-                    LIME_dataset, feature_list = Adult_categorical(X_train)    
-                    explainer = lime_tabular.LimeTabularExplainer(LIME_dataset, feature_names=feature_list,\
-                              feature_selection='forward_selection',discretize_continuous=False, \
-                              categorical_features =[2,3,4,5,6])          
-        else:
-            temp9=1  
-    else:    
-        explainer = CLEAR_regression.CLEARExplainer(X_train, model,numeric_features,\
-                                            category_prefix,feature_list,sensitivity_df)     
-    return(X_test_sample,explainer,sensitivity_df,feature_list,numeric_features,model)
-
 
 def Create_Credit_Datasets():
-    print('Pre-processing')
+    print('Pre-processing \n')
     df = pd.read_csv(CLEAR_settings.CLEAR_path +'default credit cards.csv')
     
     #%%
@@ -252,6 +212,7 @@ def Create_Credit_Datasets():
           num_threads=1)
     
     results = model.evaluate(eval_input_func)
+    print('Accuracy statistics for MLP to be explained')
     for key in sorted(results):
             print("%s: %s" % (key, results[key]))
     ###
@@ -283,7 +244,7 @@ def Credit_categorical(X_neighborhood):
 
     
 def Create_Census_Datasets(called_from):
-    print('Pre-processing')
+    print('Pre-processing \n')
     numeric_features=['age', 'hoursPerWeek']
     category_prefix=['mar','occ','gen','work', 'edu']
     df = pd.read_csv(CLEAR_settings.CLEAR_path +'adult.csv')
@@ -361,20 +322,11 @@ def Create_Census_Datasets(called_from):
           shuffle=False,
           num_threads=1)
     results = model.evaluate(eval_input_func)
+    print('Accuracy statistics for MLP to be explained')
     for key in sorted(results):
             print("%s: %s" % (key, results[key]))
             
-    X_test.reset_index(inplace=True, drop=True) 
-# only a small proportion of observations have feasible w-perturbations
-    if CLEAR_settings.test_sample==1:
-        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Final_cens_sensitivity1.csv')   
-    elif CLEAR_settings.test_sample==2:
-        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Final_cens_sensitivity2.csv')  
-    temp_df=sensitivity_df.groupby(['observation','feature'])
-    temp_df=temp_df['probability'].agg(['min','max'])
-    sensitivity_idx=np.where((temp_df['min']<=0.5) & (temp_df['max']>0.5),1,0)    
-    X_test_sample=X_test_sample[sensitivity_idx==1]
-    X_test_sample.reset_index(inplace=True, drop=True)         
+    X_test.reset_index(inplace=True, drop=True)      
     return(X_train, X_test_sample,model,numeric_features,category_prefix,feature_list)
 
 def Adult_categorical(X_neighborhood):
@@ -406,3 +358,48 @@ def Adult_categorical(X_neighborhood):
     feature_list=LIME_dataset.columns.tolist()
     LIME_dataset = LIME_dataset.values
     return (LIME_dataset, feature_list)
+
+
+def Create_Neighbourhoods(X_train,X_test_sample,model,\
+                          numeric_features,category_prefix,feature_list,neighbour_seed):                  
+    np.random.seed(neighbour_seed)   
+    if (CLEAR_settings.case_study== 'PIMA Indians Diabetes') and (CLEAR_settings.test_sample==1):
+        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'PIMA_sensitivity.csv')     
+    elif (CLEAR_settings.case_study== 'PIMA Indians Diabetes') and (CLEAR_settings.test_sample==2):
+        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Final_diabetes_sensitivity2.csv')
+    elif (CLEAR_settings.case_study== 'Credit Card') and (CLEAR_settings.test_sample==1):
+        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Credit_card_sensitivity.csv')   
+    elif (CLEAR_settings.case_study== 'Credit Card') and (CLEAR_settings.test_sample==2):
+        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Credit_card_sensitivity2.csv')   
+    elif (CLEAR_settings.case_study== 'Census') and (CLEAR_settings.test_sample==1):
+        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Final_cens_sensitivity1.csv')   
+    elif (CLEAR_settings.case_study== 'Census') and (CLEAR_settings.test_sample==2):
+        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'Final_cens_sensitivity2.csv')  
+    elif (CLEAR_settings.case_study== 'BreastC') and (CLEAR_settings.test_sample==1):
+        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'BreastC_sensitivity1.csv')   
+    elif (CLEAR_settings.case_study== 'BreastC') and (CLEAR_settings.test_sample==2):
+        sensitivity_df = pd.read_csv(CLEAR_settings.CLEAR_path +'BreastC_sensitivity2.csv')      
+    else:
+        print('Test sample incorrectly specified')
+        exit()      
+    if CLEAR_settings.LIME_comparison == True:
+        if CLEAR_settings.case_study in ['BreastC','PIMA Indians Diabetes']:
+            explainer = lime_tabular.LimeTabularExplainer(X_train, feature_names=feature_list,\
+                                                      discretize_continuous=False,kernel_width=2)
+        elif  CLEAR_settings.case_study == 'Credit Card':
+                  LIME_dataset, feature_list = Credit_categorical(X_train)    
+                  explainer = lime_tabular.LimeTabularExplainer(LIME_dataset, feature_names=feature_list,\
+                                      feature_selection='forward_selection',discretize_continuous=False, \
+                                      categorical_features =[20,21,22])
+        elif  CLEAR_settings.case_study == 'Census':
+                    LIME_dataset, feature_list = Adult_categorical(X_train)    
+                    explainer = lime_tabular.LimeTabularExplainer(LIME_dataset, feature_names=feature_list,\
+                              feature_selection='forward_selection',discretize_continuous=False, \
+                              categorical_features =[2,3,4,5,6])          
+        else:
+            temp9=1  
+    else:    
+        explainer = CLEAR_regression.CLEARExplainer(X_train, model,numeric_features,\
+                                            category_prefix,feature_list,sensitivity_df)     
+    return(X_test_sample,explainer,sensitivity_df,feature_list,numeric_features,model)
+

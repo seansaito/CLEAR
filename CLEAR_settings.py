@@ -10,14 +10,14 @@ def init():
     apply_counterfactual_weights,counterfactual_weight,exclude_infeasible_perturbations,\
     generate_regression_files,LIME_comparison,interactions_only, no_centering,no_polynomimals
     
-    case_study = 'PIMA Indians Diabetes' # 'Census','PIMA Indians Diabetes','Credit Card','BreastC'
+    case_study = 'BreastC' # 'Census','PIMA Indians Diabetes','Credit Card','BreastC'
     max_predictors = 15  # maximum number of dependent variables in stepwise regression
-    first_obs =3
-    last_obs=5  # number of observations to analyse in CLEAR test dataset Census 115/225 in test1 PIMA 115 in test1
+    first_obs =8
+    last_obs=8  # number of observations to analyse in CLEAR test dataset Census 115/225 in test1 PIMA 115 in test1
     # Credit 104
-    num_samples=50000 # number of observations to generate in Synthetic Dataset. Defaul 100000
-    regression_type = 'logistic' #'multiple' 'logistic'
-    score_type = 'prsquared' # prsquared is McFadden Pseudo R-squared. Can also be 
+    num_samples=5000 # number of observations to generate in Synthetic Dataset. Defaul 100000
+    regression_type = 'multiple' #'multiple' 'logistic'
+    score_type = 'adjR' # prsquared is McFadden Pseudo R-squared. Can also be 
     #                          set to aic or adjR (adjusted R-squared)
     test_sample=1            # sets CLEAR's test dataset
     regression_sample_size =200   # minimum number of observations in local regression. Default 200
@@ -30,7 +30,7 @@ def init():
     only_feature_perturbed = 'age' # the single feature that is perturbed if
                                    # 'perturb_one_feature' = True 
     interactions_only = False
-    no_centering = True #applies only to logistic regression
+    no_centering = False #applies only to logistic regression
     no_polynomimals = False
     exclude_infeasible_perturbations = False                               
     apply_counterfactual_weights = False
@@ -51,8 +51,12 @@ def check_input_parameters():
     error_msg = ""   
     if perturb_one_feature == True and case_study != 'Census':
         error_msg = "'Perturb_one_feature' only applies to 'Census' dataset"
+    elif first_obs > last_obs:
+        error_msg = "last_obs must be greater or equal to first obs"
+    elif last_obs> 100:
+        error_msg = "Neurips case studies were carried out on first 100 observations"
     elif perturb_one_feature == False and case_study == 'Census':
-        error_msg = "'Perturb_one_feature' currently needs to apply to 'Census' dataset"  
+        error_msg = "'Perturb_one_feature' currently needs to apply to 'Census' dataset"        
     elif perturb_one_feature == True and only_feature_perturbed  != 'age':
         error_msg = "'Only feature perturbed' should be set to age"    
     elif regression_type == 'logistic' and   score_type == 'adjR':
