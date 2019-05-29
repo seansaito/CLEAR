@@ -1,16 +1,4 @@
-""" This is the main script for CLEAR applied to the PIMA Indains Diabetes Dataset.
- Last amended 19/12/2018
- 
-Inputs: PIMA Indian Diabetes Dataset: 'diabetes.csv'
-        Results of grid searches on MPL to identify its decision boundaries
-                                      'Final_diabetes_sensitivity1.csv'
-                                      'Final_diabetes_sensitivity2.csv'
-Outputs: File on accuracy of MLP:   'nn_datetime.csv'
-         File with local regression statistics: 'LIME_datetime.csv'
-         File with all counterfactual perturbations: 'nn_commf_datetime.csv'
-         File with all infeasible perturbations: 'missing_log_df_datetime.csv'
-"""
- 
+
 import numpy as np
 import CLEAR_settings
 from sympy import symbols, solve, simplify
@@ -607,7 +595,7 @@ def Single_prediction_report(results_df,nncomp_df,regression_obj):
                      }
     # Render our file and create the PDF using our css style file
     #html_out = template.render(template_vars)
-    with open('new_CLEAR.html', 'w') as fh:
+    with open('CLEAR_prediction_report.html', 'w') as fh:
         fh.write(template.render(template_vars))
 
     fig = plt.figure()
