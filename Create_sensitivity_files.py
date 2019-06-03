@@ -87,7 +87,10 @@ def Create_sensitivity():
     shuffle=False)
      #need to add org forecast. one thought nn does badly where it lacks data
     predictions = model.predict(CLEAR_pred_input_func)
-    init_cnt=sensitivity_num*CLEAR_settings.first_obs*len(numeric_features)
+    if CLEAR_settings.case_study !='Census':
+        init_cnt=sensitivity_num*CLEAR_settings.first_obs*len(numeric_features)
+    else:
+        init_cnt =0
     cnt = 0
     top_row=['observation','feature','newnn_class','probability','new_value']
 
