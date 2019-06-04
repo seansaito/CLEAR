@@ -391,51 +391,37 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,\
                         else:
                             continue
     
-                if CLEAR_settings.exclude_infeasible_perturbations == True:
-                    if not explainer.feature_min[target_feature] <= new_value <=explainer.feature_max[target_feature]:
-                        if missing_log_df.empty:
-                            idx = 0
-                        else:
-                            idx=missing_log_df.index.max() + 1
-                        missing_log_df.loc[idx,'observation']= i
-                        missing_log_df.loc[idx,'feature']= target_feature
-                        missing_log_df.loc[idx,'reason']='value outside data range'
-                        missing_log_df.loc[idx,'perturbation']= new_value
-                        new_value = None
-                        continue
-        
-                else:
-                    new_value=np.float64( new_value)
-                    s2.iloc[0,j]=new_value          
-                    nncomp_idx= i*10+j
-        
-        
-                    CLEAR_pred_input_func = tf.estimator.inputs.pandas_input_fn(
-                          x=s2,
-                          batch_size=1,
-                          num_epochs=1,
-                          shuffle=False)
+                new_value=np.float64( new_value)
+                s2.iloc[0,j]=new_value          
+                nncomp_idx= i*10+j
     
-                    predictions = model.predict(CLEAR_pred_input_func)
-                    for p in predictions:
-                        nncomp_df.loc[nncomp_idx,'observation'] = i
-                        nncomp_df.loc[nncomp_idx,'feature'] = target_feature
-                        nncomp_df.loc[nncomp_idx,'reg_prob'] = results_df.loc[i,'reg_prob']
-                        nncomp_df.loc[nncomp_idx,'regression_class']=results_df.loc[i,'regression_class']
-                        nncomp_df.loc[nncomp_idx,'prob_with_new_value']= p['probabilities'][1]
-                        nncomp_df.loc[nncomp_idx,'oldnn_prob']= results_df.loc[i,'nn_forecast']
-                        nncomp_df.loc[nncomp_idx,'newnn_class']=p['class_ids']
-                        nncomp_df.loc[nncomp_idx,'old_value']= old_value
-                        nncomp_df.loc[nncomp_idx,'new_value']= new_value
-                        try:
-                            nncomp_df.loc[nncomp_idx,'p_value']= target_feature_p_value
-                            nncomp_df.loc[nncomp_idx,'weight']= target_feature_weight
-                            nncomp_df.loc[nncomp_idx,'se']= target_feature_se
-                        except:
-                            pass
-                    s2.iloc[0,j]= old_value
-                    if CLEAR_settings.perturb_one_feature == True:
-                        break
+    
+                CLEAR_pred_input_func = tf.estimator.inputs.pandas_input_fn(
+                      x=s2,
+                      batch_size=1,
+                      num_epochs=1,
+                      shuffle=False)
+
+                predictions = model.predict(CLEAR_pred_input_func)
+                for p in predictions:
+                    nncomp_df.loc[nncomp_idx,'observation'] = i
+                    nncomp_df.loc[nncomp_idx,'feature'] = target_feature
+                    nncomp_df.loc[nncomp_idx,'reg_prob'] = results_df.loc[i,'reg_prob']
+                    nncomp_df.loc[nncomp_idx,'regression_class']=results_df.loc[i,'regression_class']
+                    nncomp_df.loc[nncomp_idx,'prob_with_new_value']= p['probabilities'][1]
+                    nncomp_df.loc[nncomp_idx,'oldnn_prob']= results_df.loc[i,'nn_forecast']
+                    nncomp_df.loc[nncomp_idx,'newnn_class']=p['class_ids']
+                    nncomp_df.loc[nncomp_idx,'old_value']= old_value
+                    nncomp_df.loc[nncomp_idx,'new_value']= new_value
+                    try:
+                        nncomp_df.loc[nncomp_idx,'p_value']= target_feature_p_value
+                        nncomp_df.loc[nncomp_idx,'weight']= target_feature_weight
+                        nncomp_df.loc[nncomp_idx,'se']= target_feature_se
+                    except:
+                        pass
+                s2.iloc[0,j]= old_value
+                if CLEAR_settings.perturb_one_feature == True:
+                    break
     nncomp_df.observation =nncomp_df.observation.astype(int)
     nncomp_df.reset_index(inplace=True, drop=True)         
     

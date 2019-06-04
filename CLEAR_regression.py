@@ -155,7 +155,7 @@ class CLEARExplainer(object):
         temp3 = temp3.reset_index(drop=True)
         self.neighbour_df= temp3.copy(deep= True)
         if CLEAR_settings.generate_regression_files == True:
-            filename1 = CLEAR_settings.CLEAR_path +'adjlocal_'+datetime.now().strftime("%Y%m%d-%H%M%S%f")+'.csv'
+            filename1 = CLEAR_settings.CLEAR_path +'local_'+datetime.now().strftime("%Y%m%d-%H%M%S%f")+'.csv'
             self.neighbour_df.to_csv(filename1)              
         return self
                 
@@ -169,40 +169,7 @@ class CLEARExplainer(object):
 # =============================================================================    
  
 # NEED TO REMOVE EXPERIMENT        
-        if CLEAR_settings.neighbourhood_algorithm == 'L2':
-            self.local_df.loc[self.local_df['prediction'].between(0, 0.4, inclusive = True),'target_range']=1
-            self.local_df.loc[self.local_df['prediction'].between(0.4, 0.6, inclusive = True),'target_range']=2
-            self.local_df.loc[self.local_df['prediction'].between(0.6, 1, inclusive = True),'target_range']=3           
-            distances = sklearn.metrics.pairwise_distances(
-                    self.local_df.iloc[:,0:self.num_features].values,
-                    self.local_df.iloc[0,0:self.num_features].values.reshape(1,-1),
-                    metric='euclidean'
-            ).ravel()            
-            self.local_df['distances']= distances
-            self.local_df= self.local_df.sort_values(by=['distances'])
-            self.local_df = self.local_df.reset_index(drop=True)
-            num_rows = CLEAR_settings.regression_sample_size *.4
-            temp_df=self.local_df[self.local_df['target_range']==1]
-            temp_df= temp_df.sort_values(by=['distances'])
-            temp_df = temp_df.iloc[0:int(num_rows),:]
-            self.neighbour_df=temp_df.copy(deep= True)
-            num_rows = int(CLEAR_settings.regression_sample_size *.2)
-            temp_df=self.local_df[self.local_df['target_range']==2]
-            temp_df= temp_df.sort_values(by=['distances'])
-            temp_df = temp_df.iloc[0:int(num_rows),:]
-            self.neighbour_df=self.neighbour_df.append(temp_df,ignore_index=True)
-            num_rows = int(CLEAR_settings.regression_sample_size *.4)
-            temp_df=self.local_df[self.local_df['target_range']==3]
-            temp_df= temp_df.sort_values(by=['distances'])
-            temp_df = temp_df.iloc[0:int(num_rows),:]
-            self.neighbour_df=self.neighbour_df.append(temp_df,ignore_index=True)  
-            self.neighbour_df= self.neighbour_df.sort_values(by=['distances'])
-            self.neighbour_df = self.neighbour_df.reset_index(drop=True)
-            if CLEAR_settings.generate_regression_files == True:
-                filename1 = CLEAR_settings.CLEAR_path +'local_'+str(self.observation_num) +'_' + datetime.now().strftime("%Y%m%d-%H%M%S%f")+'.csv'
-                self.neighbour_df.to_csv(filename1)       
-        
-        elif CLEAR_settings.neighbourhood_algorithm == 'L3':    
+        if CLEAR_settings.neighbourhood_algorithm == 'Balanced':    
             if (self.local_df.loc[0,'prediction']>=0.1) & (self.local_df.loc[0,'prediction']<=0.9):
                 neighbour_pt1=0.1
                 neighbour_pt2 = 0.4
@@ -261,60 +228,6 @@ class CLEARExplainer(object):
             if CLEAR_settings.generate_regression_files == True:
                 filename1 = CLEAR_settings.CLEAR_path +'local_'+str(self.observation_num) +'_' + datetime.now().strftime("%Y%m%d-%H%M%S%f")+'.csv'
                 self.neighbour_df.to_csv(filename1)       
-
-        elif CLEAR_settings.neighbourhood_algorithm== 'L1':
-            Y= self.local_df.loc[:,'prediction']
-            X = self.local_df.copy(deep=True)      
-            X = X.reset_index(drop=True)
-            Y = Y.reset_index(drop=True)
-            distances = sklearn.metrics.pairwise_distances(
-            self.local_df.iloc[:,self.local_df.columns != 'prediction'].values,
-            self.local_df.iloc[0,self.local_df.columns != 'prediction'].values.reshape(1,-1),
-            metric='euclidean'
-            ).ravel()            
-            kernel_df = pd.DataFrame(columns=['prediction','distances'])
-            kernel_df['prediction'] = Y
-            kernel_df.loc[kernel_df.prediction>=0.5, 'prediction']=2
-            kernel_df.loc[kernel_df.prediction<0.5,'prediction']=0
-            kernel_df.loc[kernel_df.prediction==2,'prediction']=1
-            kernel_df['distances']= distances
-            kernel_df= kernel_df.sort_values(by=['distances'])
-            kernel_df = kernel_df.reset_index(drop=True)
-            dist_100= kernel_df.loc[199,'distances']
-            ones_100 = kernel_df.loc[0:199,'prediction'].sum()
-            dist_250= kernel_df.loc[499,'distances']
-            ones_250 = kernel_df.loc[0:499,'prediction'].sum()
-            dist_500= kernel_df.loc[999,'distances']
-            ones_500 = kernel_df.loc[0:999,'prediction'].sum()
-            dist_750= kernel_df.loc[1499,'distances']
-            ones_750 = kernel_df.loc[0:1499,'prediction'].sum()
-            if 20<=ones_100<=180:
-                self.kernel_width = dist_100
-            elif 50<=ones_250<=450:
-                self.kernel_width = dist_250
-            elif 50<=ones_500<=450:
-                self.kernel_width = dist_500
-            else:
-                self.kernel_width = dist_750
-                
-            kernel_value = np.where((distances/self.kernel_width)<=1, 1, 0)
-            
-            lime_df=X.copy(deep=True)
-            lime_df['prediction']= Y
-            if kernel_type == 'Euclidean':
-                lime_df['metric']=distances
-            elif kernel_type == 'Stan_Dev':    
-                lime_df['metric']=max_value
-            else:    
-                print('kernel incorrectly specified')
-            if CLEAR_settings.generate_regression_files == True:
-                filename1 = CLEAR_settings.CLEAR_path +'local_'+datetime.now().strftime("%Y%m%d-%H%M%S%f")+'.csv'
-                lime_df.to_csv(filename1)              
-    
-            weights = kernel_value
-            weights[0]= 1       
-            self.neighbour_df=self.local_df.copy(deep=True)
-            self.neighbour_df=self.neighbour_df[(weights>0)]             
         else:
           print('Neighbourhood Algorithm Misspecified')
         return(self)
@@ -623,7 +536,7 @@ def Run_Regressions(X_test_sample,explainer,feature_list):
                                        'standard_error','z_scores','p_values','nn_forecast',
                                        'reg_prob','regression_class','spreadsheet_data','local_data','accuracy'])
     observation_num = CLEAR_settings.first_obs       
-    print('performing step-wise regressions \n')
+    print('Performing step-wise regressions \n')
     for i in range(CLEAR_settings.first_obs,CLEAR_settings.last_obs+1):
         data_row=pd.DataFrame(columns=feature_list)
         data_row=data_row.append(X_test_sample.iloc[i],ignore_index=True)

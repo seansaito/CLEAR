@@ -43,7 +43,7 @@ def Create_sensitivity():
         (X_train, X_test_sample,model,numeric_features,category_prefix,\
         feature_list)=CLEAR_Process_Dataset.Create_BreastC_Datasets()   
     
-    print('\n' + 'Performing grid search - step 1 of CLEAR method')
+    print('\n Performing grid search - step 1 of CLEAR method \n')
     s3_df=pd.DataFrame(columns=feature_list)
     feature_min= X_train.quantile(.01)
     feature_max= X_train.quantile(.99)

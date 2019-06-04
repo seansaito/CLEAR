@@ -7,17 +7,17 @@ def init():
     score_type, test_sample, regression_sample_size, min_target_sample,\
     feature_with_indicator,CLEAR_path, with_indicator_feature, indicator_threshold,\
     neighbourhood_algorithm,perturb_one_feature,only_feature_perturbed,\
-    apply_counterfactual_weights,counterfactual_weight,exclude_infeasible_perturbations,\
+    apply_counterfactual_weights,counterfactual_weight,\
     generate_regression_files,LIME_comparison,interactions_only, no_centering,no_polynomimals
     
-    case_study = 'BreastC' # 'Census','PIMA Indians Diabetes','Credit Card','BreastC'
-    max_predictors = 15  # maximum number of dependent variables in stepwise regression
-    first_obs =8
-    last_obs=8  # number of observations to analyse in CLEAR test dataset Census 115/225 in test1 PIMA 115 in test1
+    case_study = 'Census' # 'Census','PIMA Indians Diabetes','Credit Card','BreastC'
+    max_predictors = 10  # maximum number of dependent variables in stepwise regression
+    first_obs =1
+    last_obs=2  # number of observations to analyse in CLEAR test dataset Census 115/225 in test1 PIMA 115 in test1
     # Credit 104
     num_samples=5000 # number of observations to generate in Synthetic Dataset. Defaul 100000
-    regression_type = 'multiple' #'multiple' 'logistic'
-    score_type = 'adjR' # prsquared is McFadden Pseudo R-squared. Can also be 
+    regression_type = 'logistic' #'multiple' 'logistic'
+    score_type = 'prsquared' # prsquared is McFadden Pseudo R-squared. Can also be 
     #                          set to aic or adjR (adjusted R-squared)
     test_sample=1            # sets CLEAR's test dataset
     regression_sample_size =200   # minimum number of observations in local regression. Default 200
@@ -25,14 +25,13 @@ def init():
     CLEAR_path='D:/CLEAR/' #'D:/CLEAR/''/content/drive/My Drive/Colab/'
     with_indicator_feature = False    # whether to use this indicator variable
     indicator_threshold = 1.5  # threshold for indicator variable # for PAY 0 0=0.1, 1 =0.91
-    neighbourhood_algorithm= 'L3' #default is L3 . Tested against Unbalanced
-    perturb_one_feature = False # perturb only one feature eg 'age'
+    neighbourhood_algorithm= 'Balanced' #default is L3 . Tested against Unbalanced
+    perturb_one_feature = True # perturb only one feature eg 'age'
     only_feature_perturbed = 'age' # the single feature that is perturbed if
                                    # 'perturb_one_feature' = True 
     interactions_only = False
     no_centering = False #applies only to logistic regression
-    no_polynomimals = False
-    exclude_infeasible_perturbations = False                               
+    no_polynomimals = False                              
     apply_counterfactual_weights = False
     counterfactual_weight = 9 # default to 9
     generate_regression_files = False
