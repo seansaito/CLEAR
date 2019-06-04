@@ -532,7 +532,7 @@ def Run_Regressions(X_test_sample,explainer,feature_list):
          the stepwise regressions. The results of the stepwise regression are
          stored in the results_df dataframe
     """     
-    results_df = pd.DataFrame(columns=['R_sq','intercept', 'features','weights',
+    results_df = pd.DataFrame(columns=['Reg_Score','intercept', 'features','weights',
                                        'standard_error','z_scores','p_values','nn_forecast',
                                        'reg_prob','regression_class','spreadsheet_data','local_data','accuracy'])
     observation_num = CLEAR_settings.first_obs       
@@ -544,7 +544,7 @@ def Run_Regressions(X_test_sample,explainer,feature_list):
         regression_obj = explainer.explain_data_point(data_row, observation_num)
         print('Processed observation ' + str(i))
         results_df.at[i,'features'] = regression_obj.features
-        results_df.loc[i,'R_sq'] = regression_obj.prediction_score
+        results_df.loc[i,'Reg_Score'] = regression_obj.prediction_score
         results_df.loc[i,'standard_error'] = regression_obj.standard_error
         results_df.loc[i,'z_scores'] = regression_obj.z_scores
         results_df.loc[i,'p_values'] = regression_obj.p_values

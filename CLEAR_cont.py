@@ -5,17 +5,14 @@ import CLEAR_settings, CLEAR_Process_Dataset, CLEAR_perturbations
 import re
 
     
-def LIME_CLEAR(neighbour_seed):
+def LIME_CLEAR(X_test_sample,explainer,sensitivity_df,feature_list,numeric_features, model):
 
-    (X_test_sample,explainer,sensitivity_df,feature_list,numeric_features, model)=CLEAR_Process_Dataset.Preproccess_Dataset(neighbour_seed,'lime comparison')
-    
-    
-    results_df = pd.DataFrame(columns=['R_sq','intercept', 'features','weights',
+    results_df = pd.DataFrame(columns=['Reg_score','intercept', 'features','weights',
                                        'standard_error','z_scores','p_values','nn_forecast',
                                        'reg_prob','regression_class','spreadsheet_data','local_data','accuracy'])
     observation_num = CLEAR_settings.first_obs       
     feature_list = X_test_sample.columns.tolist()
-    for i in range(CLEAR_settings.first_obs,CLEAR_settings.last_obs):       
+    for i in range(CLEAR_settings.first_obs,CLEAR_settings.last_obs+1):       
         data_row=pd.DataFrame(columns=feature_list)
         data_row=data_row.append(X_test_sample.iloc[i],ignore_index=True)
         data_row.fillna(0, inplace= True)
@@ -61,7 +58,7 @@ def LIME_CLEAR(neighbour_seed):
             
         print('Processed observation ' + str(i))
         results_df.at[i,'features'] = features
-        results_df.loc[i,'R_sq'] = lime_out.score
+        results_df.loc[i,'Reg_score'] = lime_out.score
         results_df.loc[i,'standard_error'] = 0
         results_df.loc[i,'z_scores'] = 0
         results_df.loc[i,'p_values'] = 0

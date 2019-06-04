@@ -10,28 +10,29 @@ Outputs: File on accuracy of MLP:   'nn_datetime.csv'
          File with all counterfactual perturbations: 'nn_commf_datetime.csv'
          File with all infeasible perturbations: 'missing_log_df_datetime.csv'
 """
- 
-import numpy as np
 import CLEAR_cont, Create_sensitivity_files
 import CLEAR_settings, CLEAR_Process_Dataset, CLEAR_perturbations,CLEAR_regression
 import time
 import sys
 start_time = time.time()  
 CLEAR_settings.init()
-(X_train,X_test_sample,model,numeric_features,category_prefix,feature_list) \
+
+(X_train, X_test_sample, model, numeric_features, category_prefix, feature_list) \
  =Create_sensitivity_files.Create_sensitivity()
 for neighbour_seed in range(0,1):
+    (X_test_sample,explainer,sensitivity_df,feature_list,numeric_features, model)\
+     = CLEAR_Process_Dataset.Create_Neighbourhoods( 
+             X_train, X_test_sample, model, numeric_features, 
+             category_prefix, feature_list, neighbour_seed)
+
     if CLEAR_settings.LIME_comparison  == False:    
-        (X_test_sample,explainer,sensitivity_df,feature_list,numeric_features, model)\
-             = CLEAR_Process_Dataset.Create_Neighbourhoods(X_train,X_test_sample,model,\
-                              numeric_features,category_prefix,feature_list,neighbour_seed) 
         (results_df,regression_obj)=CLEAR_regression.Run_Regressions(X_test_sample,explainer,feature_list)
         nncomp_df=CLEAR_perturbations.Calculate_Perturbations(explainer, results_df,sensitivity_df,\
                                                                          feature_list,numeric_features, model)
         if CLEAR_settings.first_obs == CLEAR_settings.last_obs:
             CLEAR_perturbations.Single_prediction_report(results_df,nncomp_df,regression_obj)
     elif CLEAR_settings.LIME_comparison  == True:
-        CLEAR_cont.LIME_CLEAR(neighbour_seed)
+        CLEAR_cont.LIME_CLEAR(X_test_sample,explainer,sensitivity_df,feature_list,numeric_features, model)
     else:
         print('Evaluation type misspecified')
         sys.exit()

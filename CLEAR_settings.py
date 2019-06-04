@@ -10,12 +10,12 @@ def init():
     apply_counterfactual_weights,counterfactual_weight,\
     generate_regression_files,LIME_comparison,interactions_only, no_centering,no_polynomimals
     
-    case_study = 'Census' # 'Census','PIMA Indians Diabetes','Credit Card','BreastC'
-    max_predictors = 10  # maximum number of dependent variables in stepwise regression
+    case_study = 'BreastC' # 'Census','PIMA Indians Diabetes','Credit Card','BreastC'
+    max_predictors = 15  # maximum number of dependent variables in stepwise regression
     first_obs =1
-    last_obs=2  # number of observations to analyse in CLEAR test dataset Census 115/225 in test1 PIMA 115 in test1
+    last_obs=100  # number of observations to analyse in CLEAR test dataset Census 115/225 in test1 PIMA 115 in test1
     # Credit 104
-    num_samples=5000 # number of observations to generate in Synthetic Dataset. Defaul 100000
+    num_samples=50000 # number of observations to generate in Synthetic Dataset. Defaul 100000
     regression_type = 'logistic' #'multiple' 'logistic'
     score_type = 'prsquared' # prsquared is McFadden Pseudo R-squared. Can also be 
     #                          set to aic or adjR (adjusted R-squared)
@@ -26,7 +26,7 @@ def init():
     with_indicator_feature = False    # whether to use this indicator variable
     indicator_threshold = 1.5  # threshold for indicator variable # for PAY 0 0=0.1, 1 =0.91
     neighbourhood_algorithm= 'Balanced' #default is L3 . Tested against Unbalanced
-    perturb_one_feature = True # perturb only one feature eg 'age'
+    perturb_one_feature = False # perturb only one feature eg 'age'
     only_feature_perturbed = 'age' # the single feature that is perturbed if
                                    # 'perturb_one_feature' = True 
     interactions_only = False
@@ -58,8 +58,8 @@ def check_input_parameters():
         error_msg = "'Perturb_one_feature' currently needs to apply to 'Census' dataset"        
     elif perturb_one_feature == True and only_feature_perturbed  != 'age':
         error_msg = "'Only feature perturbed' should be set to age"    
-    elif regression_type == 'logistic' and   score_type == 'adjR':
-        error_msg = "Adjusted R squared cannot be used with logistic regression"
+    elif regression_type == 'logistic' and   score_type != 'prsquared':
+        error_msg = "logistic regression and score type incorrectly specified"
     elif regression_type == 'multiple' and   score_type == 'prsquared':
         error_msg = "McFadden Pseudo R-squared cannot be used with multiple regression"
     elif case_study not in ['Census','PIMA Indians Diabetes','Credit Card','BreastC'] :

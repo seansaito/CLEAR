@@ -80,7 +80,7 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,\
         a perturbation as bdeing infeasible if it is outside 'the feasibility
         range' it calculates for each variable.
     """    
-    
+    print("\n Calculating w-counterfactuals \n")
     nncomp_df = pd.DataFrame(columns=['observation','feature','weight','se',
                                       'p_value','reg_prob','oldnn_prob','newnn_class',
                                       'prob_with_new_value','old_value','new_value'])
@@ -457,13 +457,14 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,\
         x= nncomp_df['accuracy']
         x = x[~x.isna()]
         ax= x.plot.hist(grid=True, bins=20, rwidth=0.9)
-        plt.title('perturbations = '+str(nncomp_df['accuracy'].count())+'  Freq Counts <= 0.25 sd = ' + str(less_target_sd)
-                     + '\n' + 'regression = ' + CLEAR_settings.regression_type +  ', score = ' + CLEAR_settings.score_type 
-                     + ', sample = ' + str(CLEAR_settings.num_samples)
-                     +'\n' + 'max_predictors = ' + str(CLEAR_settings.max_predictors)
-                     + ', regression_sample_size = ' +  str(CLEAR_settings.regression_sample_size)
-                     + ', indicator variable =' + str(CLEAR_settings.indicator_threshold))
-    
+        if CLEAR_settings.LIME_comparison== False:
+            plt.title('perturbations = '+str(nncomp_df['accuracy'].count())+'  Freq Counts <= 0.25 sd = ' + str(less_target_sd)
+                         + '\n' + 'regression = ' + CLEAR_settings.regression_type +  ', score = ' + CLEAR_settings.score_type 
+                         + ', sample = ' + str(CLEAR_settings.num_samples)
+                         +'\n' + 'max_predictors = ' + str(CLEAR_settings.max_predictors)
+                         + ', regression_sample_size = ' +  str(CLEAR_settings.regression_sample_size))
+        else:
+            plt.title('perturbations = '+str(nncomp_df['accuracy'].count())+'  Freq Counts <= 0.25 sd = ' + str(less_target_sd))
         plt.xlabel('Standard Deviations')
         fig = ax.get_figure()
         fig.savefig(CLEAR_settings.CLEAR_path +'hist'+  datetime.now().strftime("%Y%m%d-%H%M")+'.png',bbox_inches = "tight")   
@@ -574,7 +575,7 @@ def Single_prediction_report(results_df,nncomp_df,regression_obj):
                      "explanadum":explanandum,
                      "observation_number": j,
                      "regression_formula": regression_formula,
-                     "prediction_score": round_sig(results_df.R_sq[j]),
+                     "prediction_score": round_sig(results_df.Reg_score[j]),
                      "regression_type":report_regression_type,
                      "AI_prediction":report_AI_prediction,
                      "reg_counterfactuals":reg_counter_df.to_html(index=False, classes = 'mystyle')
