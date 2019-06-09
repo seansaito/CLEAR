@@ -4,19 +4,19 @@ import numpy as np
 import CLEAR_settings, CLEAR_Process_Dataset, CLEAR_perturbations
 import re
 
-    
+#This runs CLEAR using the neighbourhood dataset generation and regression algorithms of LIME
 def LIME_CLEAR(X_test_sample,explainer,sensitivity_df,feature_list,numeric_features, model):
 
-    results_df = pd.DataFrame(columns=['Reg_score','intercept', 'features','weights',
-                                       'standard_error','z_scores','p_values','nn_forecast',
-                                       'reg_prob','regression_class','spreadsheet_data','local_data','accuracy'])
+    results_df = pd.DataFrame(columns=['Reg_score','intercept', 'features','weights',\
+                                       'nn_forecast','reg_prob','regression_class',\
+                                       'spreadsheet_data','local_data','accuracy'])
     observation_num = CLEAR_settings.first_obs       
     feature_list = X_test_sample.columns.tolist()
     for i in range(CLEAR_settings.first_obs,CLEAR_settings.last_obs+1):       
         data_row=pd.DataFrame(columns=feature_list)
         data_row=data_row.append(X_test_sample.iloc[i],ignore_index=True)
         data_row.fillna(0, inplace= True)
-    #        qaz=sorted(exp.local_exp[1],key=lambda x: np.abs(x[0]))
+        
         if CLEAR_settings.case_study ==  'Credit Card':
             LIME_datarow, LIME_features = CLEAR_Process_Dataset.Credit_categorical(data_row)    
             LIME_datarow= LIME_datarow.flatten()        
@@ -59,9 +59,6 @@ def LIME_CLEAR(X_test_sample,explainer,sensitivity_df,feature_list,numeric_featu
         print('Processed observation ' + str(i))
         results_df.at[i,'features'] = features
         results_df.loc[i,'Reg_score'] = lime_out.score
-        results_df.loc[i,'standard_error'] = 0
-        results_df.loc[i,'z_scores'] = 0
-        results_df.loc[i,'p_values'] = 0
         results_df.loc[i,'nn_forecast'] = lime_out.predict_proba[1]     
         results_df.loc[i,'reg_prob'] = lime_out.local_pred[0]  
         results_df.loc[i,'regression_class'] = 'x'
@@ -81,7 +78,7 @@ def LIME_CLEAR(X_test_sample,explainer,sensitivity_df,feature_list,numeric_featu
         in the nncomp_df dataframe. If CLEAR calculates a perturbation
         that is infeasible, then the details of the perturbation
         are stoted in the missing_log_df dataframe. CLEAR will classify
-        a perturbation as bdeing infeasible if it is outside 'the feasibility
+        a perturbation as being infeasible if it is outside 'the feasibility
         range' it calculates for each variable.
     """    
     CLEAR_perturbations.Calculate_Perturbations(explainer, results_df,sensitivity_df,feature_list,numeric_features, model)

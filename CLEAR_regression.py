@@ -532,9 +532,9 @@ def Run_Regressions(X_test_sample,explainer,feature_list):
          the stepwise regressions. The results of the stepwise regression are
          stored in the results_df dataframe
     """     
-    results_df = pd.DataFrame(columns=['Reg_Score','intercept', 'features','weights',
-                                       'standard_error','z_scores','p_values','nn_forecast',
-                                       'reg_prob','regression_class','spreadsheet_data','local_data','accuracy'])
+    results_df = pd.DataFrame(columns=['Reg_Score','intercept', 'features','weights',\
+                                       'nn_forecast','reg_prob','regression_class',\
+                                       'spreadsheet_data','local_data','accuracy'])
     observation_num = CLEAR_settings.first_obs       
     print('Performing step-wise regressions \n')
     for i in range(CLEAR_settings.first_obs,CLEAR_settings.last_obs+1):
@@ -545,9 +545,6 @@ def Run_Regressions(X_test_sample,explainer,feature_list):
         print('Processed observation ' + str(i))
         results_df.at[i,'features'] = regression_obj.features
         results_df.loc[i,'Reg_Score'] = regression_obj.prediction_score
-        results_df.loc[i,'standard_error'] = regression_obj.standard_error
-        results_df.loc[i,'z_scores'] = regression_obj.z_scores
-        results_df.loc[i,'p_values'] = regression_obj.p_values
         results_df.loc[i,'nn_forecast'] = regression_obj.nn_forecast
         results_df.loc[i,'reg_prob'] = regression_obj.local_prob  
         results_df.loc[i,'regression_class'] = regression_obj.regression_class

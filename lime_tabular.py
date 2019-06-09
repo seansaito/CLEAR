@@ -490,6 +490,7 @@ class LimeTabularExplainer(object):
                 self.scaler.mean_ = 0
             if self.sample_around_instance:
                 data = data * self.scaler.scale_ + data_row
+                data = data.astype(np.float)
             else:
                 data = data * self.scaler.scale_ + self.scaler.mean_
             categorical_features = self.categorical_features

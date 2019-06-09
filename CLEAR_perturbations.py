@@ -385,7 +385,9 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,\
                                   k= min(abs(explainer.feature_min[target_feature] -y),abs(explainer.feature_max[target_feature] -y))  
                                   if k<lowest_root:
                                       lowest_root = k
-                                      new_value = y                                
+                                      new_value = y
+                              if lowest_root ==999:
+                                  continue
                  #takes the minimum perturbation from both sides of Indicator threshold. If possible select
                  # feasible perturbation
                         else:

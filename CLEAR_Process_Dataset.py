@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jan 18 10:34:21 2019
-
-@author: Adam
+This module pre-processes the selected UCI dataset and then trains an MLP model
 """
 import numpy as np
 import CLEAR_regression
@@ -11,6 +9,8 @@ import pandas as pd
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import lime_tabular
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 """ Specify input parameters """
 #                          set to aic or adjR (adjusted R-squared)
     
@@ -81,7 +81,7 @@ def Create_PIMA_Datasets():
     
     # print and store summary statistics for MLP model
     results = model.evaluate(eval_input_func)
-    print('Accuracy statistics for MLP to be explained')
+    print('Accuracy statistics for MLP to be explained \n')
     for key in sorted(results):
             print("%s: %s" % (key, results[key]))
     return(X_train, X_test_sample,model, numeric_features,category_prefix,feature_list)
@@ -146,7 +146,7 @@ def Create_BreastC_Datasets():
     
     # print and store summary statistics for MLP model
     results = model.evaluate(eval_input_func)
-    print('Accuracy statistics for MLP to be explained')
+    print('Accuracy statistics for MLP to be explained \n')
     for key in sorted(results):
             print("%s: %s" % (key, results[key]))
     return(X_train, X_test_sample,model, numeric_features,category_prefix,feature_list)   
@@ -212,7 +212,7 @@ def Create_Credit_Datasets():
           num_threads=1)
     
     results = model.evaluate(eval_input_func)
-    print('Accuracy statistics for MLP to be explained')
+    print('Accuracy statistics for MLP to be explained \n')
     for key in sorted(results):
             print("%s: %s" % (key, results[key]))
     ###
@@ -322,7 +322,7 @@ def Create_Census_Datasets(called_from):
           shuffle=False,
           num_threads=1)
     results = model.evaluate(eval_input_func)
-    print('Accuracy statistics for MLP to be explained')
+    print('Accuracy statistics for MLP to be explained \n')
     for key in sorted(results):
             print("%s: %s" % (key, results[key]))
             
@@ -390,14 +390,14 @@ def Create_Neighbourhoods(X_train,X_test_sample,model,\
                   LIME_dataset, feature_list = Credit_categorical(X_train)    
                   explainer = lime_tabular.LimeTabularExplainer(LIME_dataset, feature_names=feature_list,\
                                       feature_selection='forward_selection',discretize_continuous=False, \
-                                      categorical_features =[20,21,22])
+                                      categorical_features =[20,21,22],kernel_width=1.5,sample_around_instance=True)
         elif  CLEAR_settings.case_study == 'Census':
                     LIME_dataset, feature_list = Adult_categorical(X_train)    
                     explainer = lime_tabular.LimeTabularExplainer(LIME_dataset, feature_names=feature_list,\
-                              feature_selection='forward_selection',discretize_continuous=False, \
-                              categorical_features =[2,3,4,5,6])          
+                              feature_selection='forward_selection',discretize_continuous=False,\
+                                  categorical_features =[2,3,4,5,6],kernel_width=.5,sample_around_instance=True)
         else:
-            temp9=1  
+            print('Error in LIME comparison: Create Neighbourhood method')  
     else:    
         explainer = CLEAR_regression.CLEARExplainer(X_train, model,numeric_features,\
                                             category_prefix,feature_list,sensitivity_df)     
