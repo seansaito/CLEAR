@@ -385,17 +385,20 @@ def Create_Neighbourhoods(X_train,X_test_sample,model,\
     if CLEAR_settings.LIME_comparison == True:
         if CLEAR_settings.case_study in ['BreastC','PIMA Indians Diabetes']:
             explainer = lime_tabular.LimeTabularExplainer(X_train, feature_names=feature_list,\
-                                                      discretize_continuous=False,kernel_width=2)
+                                            discretize_continuous=False,kernel_width=CLEAR_settings.LIME_kernel,\
+                                            sample_around_instance=True)
         elif  CLEAR_settings.case_study == 'Credit Card':
                   LIME_dataset, feature_list = Credit_categorical(X_train)    
                   explainer = lime_tabular.LimeTabularExplainer(LIME_dataset, feature_names=feature_list,\
-                                      feature_selection='forward_selection',discretize_continuous=False, \
-                                      categorical_features =[20,21,22],kernel_width=1.5,sample_around_instance=True)
+                                            feature_selection='forward_selection',discretize_continuous=False, \
+                                            categorical_features =[20,21,22],kernel_width=CLEAR_settings.LIME_kernel,\
+                                            sample_around_instance=True)
         elif  CLEAR_settings.case_study == 'Census':
                     LIME_dataset, feature_list = Adult_categorical(X_train)    
                     explainer = lime_tabular.LimeTabularExplainer(LIME_dataset, feature_names=feature_list,\
-                              feature_selection='forward_selection',discretize_continuous=False,\
-                                  categorical_features =[2,3,4,5,6],kernel_width=.5,sample_around_instance=True)
+                                            feature_selection='forward_selection',discretize_continuous=False,\
+                                            categorical_features =[2,3,4,5,6],kernel_width=CLEAR_settings.LIME_kernel,\
+                                            sample_around_instance=True)
         else:
             print('Error in LIME comparison: Create Neighbourhood method')  
     else:    

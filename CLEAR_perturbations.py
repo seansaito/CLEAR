@@ -81,8 +81,7 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,\
         range' it calculates for each variable.
     """    
     print("\n Calculating w-counterfactuals \n")
-    nncomp_df = pd.DataFrame(columns=['observation','feature','weight','se',
-                                      'p_value','reg_prob','oldnn_prob','newnn_class',
+    nncomp_df = pd.DataFrame(columns=['observation','feature','weight','reg_prob','oldnn_prob','newnn_class',
                                       'prob_with_new_value','old_value','new_value'])
     
     
@@ -107,9 +106,6 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,\
         raw_eqn= results_df.loc[i,'features'].copy()
         raw_weights = results_df.loc[i,'weights'].tolist()
         raw_data = results_df.loc[i,'local_data'].tolist()
-        if CLEAR_settings.LIME_comparison == False:
-            raw_p_values = results_df.loc[i,'p_values'].tolist()
-            raw_se= results_df.loc[i,'standard_error'].tolist()
         features_processed = 0
 #the next 2 lines ensures that the same code can be used irrespective of whether the regression has
 #been forced through the data point to be explained
@@ -194,12 +190,6 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,\
                     elif raw_feature == target_feature:
                             str_eqn +=  "+" + str(raw_weights[raw_eqn.index(raw_feature)])+"*x"
                             target_feature_weight = raw_weights[raw_eqn.index(raw_feature)]
-                            if CLEAR_settings.LIME_comparison == True:
-                                target_feature_p_value = 0
-                                target_feature_se = 0
-                            else:
-                                target_feature_p_value= raw_p_values[raw_eqn.index(raw_feature)]
-                                target_feature_se= raw_se[raw_eqn.index(raw_feature)]                            
                     elif raw_feature in feature_list:
                         new_term= raw_data[feature_list.index(raw_feature)]*raw_weights[raw_eqn.index(raw_feature)]
                         str_eqn += "+ " + str(new_term)

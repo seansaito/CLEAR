@@ -21,19 +21,20 @@ def LIME_CLEAR(X_test_sample,explainer,sensitivity_df,feature_list,numeric_featu
             LIME_datarow, LIME_features = CLEAR_Process_Dataset.Credit_categorical(data_row)    
             LIME_datarow= LIME_datarow.flatten()        
             lime_out= explainer.explain_instance(LIME_datarow, model, num_features=CLEAR_settings.max_predictors,\
-                                                 num_samples=15000, top_labels=None)
+                                                 num_samples=CLEAR_settings.LIME_sample)
         elif CLEAR_settings.case_study ==  'Census':   
             LIME_datarow, LIME_features = CLEAR_Process_Dataset.Adult_categorical(data_row)    
             LIME_datarow= LIME_datarow.flatten()        
-            lime_out= explainer.explain_instance(LIME_datarow, model, num_features=CLEAR_settings.max_predictors,\
-                                                 num_samples=15000, top_labels=None)
+            lime_out= explainer.explain_instance(LIME_datarow, model, num_features=CLEAR_settings.max_predictors, \
+                                                 num_samples=CLEAR_settings.LIME_sample)
 
         else:
-            lime_out= explainer.explain_instance(X_test_sample.iloc[i], model, num_features=CLEAR_settings.max_predictors, top_labels=None)
+            lime_out= explainer.explain_instance(X_test_sample.iloc[i].values, model, num_features=CLEAR_settings.max_predictors,\
+                                                 num_samples=CLEAR_settings.LIME_sample)
         coeffs = np.asarray([x[1] for x in lime_out.local_exp[1]])        
         feature_idx=np.asarray([x[0] for x in lime_out.local_exp[1]]) 
         features =[lime_out.domain_mapper.exp_feature_names[x] for x in feature_idx]
-        if CLEAR_settings.case_study ==  'Credit Card':      
+        if CLEAR_settings.case_study ==  'Credit Card':
             str1 = ','.join(features)
             str1= str1.replace("MARRIAGE=","marDd")
             str1= str1.replace("EDUCATION=","eduDd")
