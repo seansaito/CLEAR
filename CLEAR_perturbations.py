@@ -485,7 +485,7 @@ def Calculate_Perturbations(explainer, results_df,sensitivity_df,\
 
 
 
-def Single_prediction_report(results_df,nncomp_df,regression_obj):
+def Single_prediction_report(results_df,nncomp_df,regression_obj,feature_list):
 #dataframe to HTML Report
     if CLEAR_settings.case_study=='Census':
         explanandum = 'earning > $50k'
@@ -518,9 +518,9 @@ def Single_prediction_report(results_df,nncomp_df,regression_obj):
     regression_formula= regression_formula.replace("_","*")
     report_AI_prediction = str(round_sig(results_df.nn_forecast[j]))
     if CLEAR_settings.score_type == 'adjR':  
-        report_regression_type = "Adjusted R-Squared"
+        regression_score_type = "Adjusted R-Squared"
     else:
-        report_regression_type = CLEAR_settings.score_type
+        regression_score_type = CLEAR_settings.score_type
         
         
     HTML_df= pd.DataFrame(columns=['feature','input value','coeff','abs_coeff'])
@@ -546,19 +546,22 @@ def Single_prediction_report(results_df,nncomp_df,regression_obj):
     HTML_df=HTML_df.head(10)
         
     counter_df =nncomp_df[['feature','old_value','perc50']].copy()
-    counter_df.rename(columns={'old_value':'input value', 'perc50':'counterfactual value'}, inplace=True )
+    counter_df.rename(columns={'old_value':'input value', 'perc50':'actual w-counterfactual value'}, inplace=True )
 #    HTML_df.to_html('CLEAR.HTML')
     
     nncomp_df['error']= nncomp_df['new_value']-nncomp_df['perc50']
     reg_counter_df=nncomp_df[['feature','new_value','error']].copy()
     reg_counter_df.error= abs(reg_counter_df.error)
-    reg_counter_df.rename(columns={'new_value':'counterfactual value',\
-                                   'error':'fidelity error'}, inplace=True )
+    reg_counter_df.rename(columns={'new_value':'estimated w-counterfactual value',\
+                                   'error':'w-counterfactual fidelity error'}, inplace=True )
 
-    
+
+    # results_df.weights needs pre-processing prior to sending to HTML
+    weights=results_df.weights.values[0]
+    weights=weights.tolist()
     pd.set_option('colheader_justify', 'left','precision', 2)
     env = Environment(loader=FileSystemLoader('.'))
-    template = env.get_template("CLEAR_report.html")
+    template = env.get_template("newCLEAR_report.html")
     template_vars = {"title" : "CLEAR Statistics",
                      "regression_table": HTML_df.to_html(index=False, classes = 'mystyle'),
                      "counterfactual_table": counter_df.to_html(index=False,classes='mystyle'),
@@ -567,10 +570,15 @@ def Single_prediction_report(results_df,nncomp_df,regression_obj):
                      "explanadum":explanandum,
                      "observation_number": j,
                      "regression_formula": regression_formula,
-                     "prediction_score": round_sig(results_df.Reg_score[j]),
-                     "regression_type":report_regression_type,
+                     "prediction_score": round_sig(results_df.Reg_Score[j]),
+                     "regression_score_type": regression_score_type,
+                     "regression_type":CLEAR_settings.regression_type,
                      "AI_prediction":report_AI_prediction,
-                     "reg_counterfactuals":reg_counter_df.to_html(index=False, classes = 'mystyle')
+                     "reg_counterfactuals":reg_counter_df.to_html(index=False, classes = 'mystyle'),
+                     "feature_list": feature_list,
+                     "spreadsheet_data":results_df.spreadsheet_data.values[0],
+                     "weights":weights,
+                     "intercept":results_df.intercept.values[0]
                      }
     # Render our file and create the PDF using our css style file
     #html_out = template.render(template_vars)

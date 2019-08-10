@@ -16,13 +16,13 @@ def init():
     LIME_sample, LIME_kernel
     
     case_study = 'PIMA Indians Diabetes' # 'Credit Card','PIMA Indians Diabetes','Credit Card','BreastC'
-    max_predictors = 15  # maximum number of dependent variables in stepwise regression
+    max_predictors = 11  # maximum number of dependent variables in stepwise regression
     first_obs =1
-    last_obs=2  # number of observations to analyse in CLEAR test dataset Census 115/225 in test1 PIMA 115 in test1
+    last_obs=1  # number of observations to analyse in CLEAR test dataset Census 115/225 in test1 PIMA 115 in test1
     # Credit 104
-    num_samples=50000 # number of observations to generate in Synthetic Dataset. Defaul 100000
+    num_samples=1000 # number of observations to generate in Synthetic Dataset. Defaul 100000
     regression_type = 'multiple' #'multiple' 'logistic'
-    score_type = 'adjR' # prsquared is McFadden Pseudo R-squared. Can also be 
+    score_type = 'adjR' # prsquared is McFadden Pseudo R-squared. Can also be
     #                          set to aic or adjR (adjusted R-squared)
     test_sample=1            # sets CLEAR's test dataset
     regression_sample_size =200   # minimum number of observations in local regression. Default 200
@@ -37,10 +37,10 @@ def init():
     apply_counterfactual_weights = False
     counterfactual_weight = 9 # default to 9
     generate_regression_files = False
-    Num_iterations= 20
+    Num_iterations= 1
 # Parameters for evaluating the effects of different parts of CLEAR's regression
     interactions_only = False
-    no_centering = True
+    no_centering = False
     no_polynomimals = False                             
 # Parameters for comparing CLEAR with LIME
     LIME_comparison = False
